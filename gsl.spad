@@ -7,7 +7,7 @@
 ++ License: BSD  (GSL is distributed under the GPL)
 ++ Date Last Updated: October 26, 2015
 ++ Basic Operations: integration
-++ Related Domains:
+++ Related Domains: DoubleFloat
 ++ Also See:
 ++ AMS Classifications:
 ++ Keywords: GNU; GSL; numeric; integration
@@ -19,6 +19,8 @@
 ++ Description:
 ++   Provides an interface to the routines of the GNU Scientific Library.
 ++   http://www.gnu.org/software/gsl/manual/
+++ Author(s):
+++   Kurt Pagani, Alasdair McAndrew, Bill Page
 gsl() : Exports == Implementation where
 
   DF ==> DoubleFloat
