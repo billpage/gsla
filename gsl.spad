@@ -1,0 +1,44 @@
+)lisp (load "~/quicklisp/setup")
+)lisp (ql:quickload "gsll")
+)lisp (load "gsl.lisp")
+)abbrev package GSL gsl
+++ GNU Scientific Library for Axiom (and FriCAS and OpenAxiom)
+++ Date Created: October 25, 2015
+++ License: BSD  (GSL is distributed under the GPL)
+++ Date Last Updated: October 26, 2015
+++ Basic Operations: integration
+++ Related Domains:
+++ Also See:
+++ AMS Classifications:
+++ Keywords: GNU; GSL; numeric; integration
+++ Examples: gslIntegrationQng(f,0.0::DF,1.0::DF).result
+++ References:
+++   https://common-lisp.net/project/gsll/
+++   http://www.gnu.org/software/gsl/
+++   http://www.gnu.org/software/gsl/manual/gsl-ref.html
+++ Description:
+++   Provides an interface to the routines of the GNU Scientific Library.
+++   http://www.gnu.org/software/gsl/manual/
+gsl() : Exports == Implementation where
+
+  DF ==> DoubleFloat
+
+  Exports ==  with
+
+    gslLookup: String -> Symbol
+    gslIntegrationQng :  (DF -> DF,DF,DF) -> Record(result:DF, abserr:DF, neval:Integer)
+      ++ \spad{\gslIntegrationQng}  applies the Gauss-Kronrod 10-point, 
+      ++ 21-point, 43-point and 87-point integration rules in succession
+
+
+  Implementation ==  add
+
+    gslLookup(s) ==
+      j:SExpression:=GSL_-LOOKUP(s)$Lisp
+      if not null? j then
+        DESCRIBE(symbol(j))$Lisp
+      symbol(j)      
+    gslIntegrationQng(f,a,b) ==
+      r:List DF:=INTEGRATION_-QNG_-LIST(mkLispFunction1(f@(DF->DF))$Lisp,a,b)$Lisp
+      [r(1),r(2),r(3) pretend Integer]
+

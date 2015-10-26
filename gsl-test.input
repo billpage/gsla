@@ -1,0 +1,5 @@
+gslLookup("gsl_sf_elljac_e")
+gslLookup("gsl_integration_qng")
+DF ==> DoubleFloat
+f:=(x:DF):DF+->exp(-x^2)
+gslIntegrationQng(f,0.0::DF,1.0::DF)
