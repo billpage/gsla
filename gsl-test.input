@@ -1,7 +1,26 @@
 )co gsl
 gslLookup("gsl_sf_elljac_e")
 gslLookup("gsl_integration_qng")
+--
 DF ==> DoubleFloat
+--
+not gslIsNaN?(0.0::DF)
+gslIsNaN?(0.0::DF/0.0::DF)
+--
+zero? gslIsInf(0.0::DF)
+zero? gslIsInf(0.0::DF/0.0::DF)
+one? gslIsInf(1.0::DF/0.0::DF)
+-- see footnote 6 in gsl manual
+one?(-gslIsInf(-1.0::DF/0.0::DF))
+--
+gslFinite?(0.0::DF)
+not gslFinite?(1.0::DF/0.0::DF)
+not gslFinite?(0.0::DF/0.0::DF)
+--
+gslFcmp(3.141592::DF,3.1415::DF,0.00001::DF)
+gslFcmp(3.1415::DF,3.141592::DF,0.0001::DF)
+gslFcmp(3.1415::DF,3.141592::DF,0.00001::DF)
+--
 f:=(x:DF):DF+->exp(-x^2)
 gslIntegrationQng(f,0.0::DF,1.0::DF)
 g(x:DF):DF == exp(-x^2)
