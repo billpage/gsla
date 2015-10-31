@@ -1,6 +1,6 @@
 )co gsl
-gslLookup("gsl_sf_elljac_e")
-gslLookup("gsl_integration_qng")
+gslLookup("gsl_linalg_LU_decomp")
+gslLookup("gsl_permute")
 --
 DF ==> DoubleFloat
 --
@@ -25,3 +25,18 @@ f:=(x:DF):DF+->exp(-x^2)
 gslIntegrationQng(f,0.0::DF,1.0::DF)
 g(x:DF):DF == exp(-x^2)
 gslIntegrationQng(g,0.0::DF,1.0::DF).result
+--
+m:=matrix [[11.0::DF,2.0::DF,3.0::DF],[4.0::DF,5.0::DF,6.0::DF],[7.0::DF,8.0::DF,9.0::DF]]
+m1:=gslLUdecomposition(m)
+-- Why is sign wrong? Need sign of permuation.
+reduce(*,[(m1.LU)(i,i) for i in 1..3])
+determinant(m)
+L1:=matrix [[(j<i=>(m1.LU)(i,j);(i=j=>1.0;0.0)) for j in 1..3] for i in 1..3]
+U1:=matrix [[(i<=j=>(m1.LU)(i,j);0.0) for j in 1..3] for i in 1..3]
+L1*U1
+-- Compare
+m2:=LUDecomp(m)$LUDecomposition(DF)
+reduce(*,[(m2.LU)(i,i) for i in 1..3])
+L2:=matrix [[(j<i=>(m2.LU)(i,j);(i=j=>1.0;0.0)) for j in 1..3] for i in 1..3]
+U2:=matrix [[(i<=j=>(m2.LU)(i,j);0.0) for j in 1..3] for i in 1..3]
+L2*U2

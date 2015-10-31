@@ -50,6 +50,7 @@ gsl() : Exports == Implementation where
     gslIntegrationQng: (DF -> DF,DF,DF) -> Record(result:DF, abserr:DF, neval:Integer)
       ++ \spad{\gslIntegrationQng}  applies the Gauss-Kronrod 10-point, 
       ++ 21-point, 43-point and 87-point integration rules in succession
+    gslLUdecomposition: Matrix DF -> Record(LU:Matrix DF,Perm:List Integer)
 
   Implementation ==  add
 
@@ -68,7 +69,14 @@ gsl() : Exports == Implementation where
       r:SExpression := DOUBLE_-FLOAT_-UNEQUAL(x,y,epsilon)$Lisp
       null? r => 0
       r pretend SingleInteger
-    gslIntegrationQng(f,a,b) ==
-      r:List DF:=INTEGRATION_-QNG_-LIST(mkLispFunction1(f@(DF->DF))$Lisp,a,b)$Lisp
-      [r(1),r(2),r(3) pretend Integer]
+    gslIntegrationQng(f,a,b) == INTEGRATION_-QNG_-VECTOR(mkLispFunction1(f@(DF->DF))$Lisp,a,b)$Lisp
+
+    gslLUdecomposition(mat) ==
+      m:=listOfLists mat
+      r:=nrows mat
+      c:=ncols mat
+      res:List List List DF:=LU_-DECOMP(m,r,c)$Lisp
+      --output(res)
+      [matrix(res(1)),res(2) pretend List Integer]
+
 

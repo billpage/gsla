@@ -2,6 +2,7 @@
 (import 'gsll:gsl-lookup)
 (import (list 'gsll:nanp 'gsll:finitep 'gsl:double-float-unequal))
 (import 'gsll:integration-qng)
+;(import 'gsl:lu-decomposition)
 ; more ...
 
 (defun |lambdaFuncallSpad| (f)
@@ -17,6 +18,41 @@
 ; need to avoid conflict with BOOT:INFINITYP
 (defun IsInf (a) (gsl:infinityp a))
 
-; Return multiple values as a list
-(defun integration-qng-list (f a b)
-  (multiple-value-list (integration-qng f a b)))
+; Return multiple values as a vector (can be interpreted as Axiom Record if number of values > 2)
+(defun integration-qng-vector (f a b)
+  (apply #'vector (multiple-value-list (integration-qng f a b))))
+
+(defun lu-decomp (m r c)
+  (let*
+    (
+      (matrix
+        (grid:make-foreign-array 'double-float :dimensions (list r c) :initial-contents
+          (loop for row below r collecting
+            (loop for col below c collecting
+              (elt (elt m row) col)
+            )
+          )
+        )
+      )
+    )
+    (multiple-value-bind (matrix perm) (gsl:lu-decomposition matrix)
+      (list
+        (loop for row below r collecting
+          (loop for col below c collecting
+            (grid:aref matrix row col)
+          )
+        )
+        (loop for row below r collecting
+          (grid:aref
+            (gsl:permute perm
+              (grid:make-foreign-array '(unsigned-byte 64) :initial-contents
+                (loop for row below r collecting (+ 1 row))
+              )
+            )
+            row
+          )
+        )
+      )
+    )
+  )
+)
