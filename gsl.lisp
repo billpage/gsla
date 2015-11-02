@@ -35,8 +35,15 @@
 ; or a List of such input values. The input values are modified if necessary
 ; to be compatible with GSLL.
 
-(defun gslintegrationqng (per f a b)
-  (apply (|mkLispFunction3| per) (multiple-value-list (gsl:integration-qng (|mkLispFunction1| f) a b))))
+(defun gslintegrationqng (per f a b opt)
+  (apply (|mkLispFunction3| per)
+    (multiple-value-list
+      (apply #'gsl:integration-qng
+        (append (list (|mkLispFunction1| f) a b) opt)
+      )
+    )
+  )
+)
 
 (defvar intrules (list ':gauss15 ':gauss21 ':gauss31 ':gauss41 ':gauss51 ':gauss61))
 

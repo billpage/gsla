@@ -47,9 +47,16 @@ Gsl() : Exports == Implementation where
       ++ returns -1, or if x > y, the function returns +1. Note that
       ++ this function is not suitable for testing whether a value is
       ++ approximately zero.
-    integrationQng: (DF -> DF,DF,DF) -> Record(result:DF, abserr:DF, neval:Integer)
-      ++ \spad{\integrationQng}  applies the Gauss-Kronrod 10-point, 
+    integrationQng: (DF->DF,DF,DF) -> Record(result:DF, abserr:DF, neval:Integer)
+      ++ \spad{\integrationQng(f,a,b)}  applies the Gauss-Kronrod 10-point, 
       ++ 21-point, 43-point and 87-point integration rules in succession
+    integrationQng: (DF->DF,DF,DF,DF) -> Record(result:DF, abserr:DF, neval:Integer)
+      ++ \spad{\gslIntegrationQng(f,a,b,epsabs)}  applies the Gauss-Kronrod 10-point, 
+      ++ 21-point, 43-point and 87-point integration rules in succession
+    integrationQng: (DF->DF,DF,DF,DF,DF) -> Record(result:DF, abserr:DF, neval:Integer)
+      ++ \spad{\gslIntegrationQng(f,a,b,epsabs,epsrel)}  applies the Gauss-Kronrod 10-point, 
+      ++ 21-point, 43-point and 87-point integration rules in succession
+
     integrationQag: (DF -> DF,DF,DF,Integer) -> Record(result:DF, abserr:DF)
       ++ \spad{\integrationQag} applies an integration rule adaptively
       ++ until an estimate of the integral of f over (a,b) is achieved
@@ -102,7 +109,15 @@ Gsl() : Exports == Implementation where
     integrationQng(f,a,b) == GSLINTEGRATIONQNG(
       -- convert returned values to Spad representation
       (v1:DF,v2:DF,v3:Integer):Record(result:DF, abserr:DF, neval:Integer)+->[v1,v2,v3],
-      f,a,b)$Lisp
+      f,a,b,nil()$List(DF))$Lisp
+    integrationQng(f,a,b,epsabs) == GSLINTEGRATIONQNG(
+      -- convert returned values to Spad representation
+      (v1:DF,v2:DF,v3:Integer):Record(result:DF, abserr:DF, neval:Integer)+->[v1,v2,v3],
+      f,a,b,[epsabs]$List(DF))$Lisp
+    integrationQng(f,a,b,epsabs,epsrel) == GSLINTEGRATIONQNG(
+      -- convert returned values to Spad representation
+      (v1:DF,v2:DF,v3:Integer):Record(result:DF, abserr:DF, neval:Integer)+->[v1,v2,v3],
+      f,a,b,[epsabs,epsrel]$List(DF))$Lisp
     integrationQag(f,a,b,key) == GSLINTEGRATIONQAG(
       (v1:DF,v2:DF):Record(result:DF, abserr:DF)+->[v1,v2],
       f,a,b,key)$Lisp
