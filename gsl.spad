@@ -28,19 +28,19 @@ Gsl() : Exports == Implementation where
   Exports ==  with
 
     lookup: String -> Symbol
-      ++ \spad{\gslLookup} finds GSLL function by GSL name and
+      ++ \spad{\lookup} finds GSLL function by GSL name and
       ++ displays some documentation.
     isNaN?: DF -> Boolean
-      ++ \spad{\gslIsNaN?} returns true if x is not-a-number. 
+      ++ \spad{\isNaN?} returns true if x is not-a-number. 
     isInf: DF -> Integer
-      ++ \spad{\gslIsInf} returns +1 if x is positive infinity,
+      ++ \spad{\isInf} returns +1 if x is positive infinity,
       ++ -1 if x is negative infinity and 0 otherwise. On
       ++ some platforms 1 is returned for negative infinity.
     finite?: DF -> Boolean
-      ++ \spad{\gslFinite?} returns true if x is a real number,
+      ++ \spad{\finite?} returns true if x is a real number,
       ++ and false if it is infinite or not-a-number.
     fcmp: (DF,DF,DF) -> Integer
-      ++ \spad{\gslFcmp} determines whether x and y are approximately
+      ++ \spad{\fcmp} determines whether x and y are approximately
       ++ equal to a relative accuracy epsilon. If x and y lie
       ++ within this interval, they are considered approximately equal
       ++ and the function returns 0. Otherwise if x < y, the function
@@ -48,9 +48,38 @@ Gsl() : Exports == Implementation where
       ++ this function is not suitable for testing whether a value is
       ++ approximately zero.
     integrationQng: (DF -> DF,DF,DF) -> Record(result:DF, abserr:DF, neval:Integer)
-      ++ \spad{\gslIntegrationQng}  applies the Gauss-Kronrod 10-point, 
+      ++ \spad{\integrationQng}  applies the Gauss-Kronrod 10-point, 
       ++ 21-point, 43-point and 87-point integration rules in succession
+    integrationQag: (DF -> DF,DF,DF,Integer) -> Record(result:DF, abserr:DF)
+      ++ \spad{\integrationQag} applies an integration rule adaptively
+      ++ until an estimate of the integral of f over (a,b) is achieved
+      ++ within the desired absolute and relative error limits, epsabs
+      ++ and epsrel. The function returns the final approximation,
+      ++ result, and an estimate of the absolute error, abserr.
+      ++ The integration rule is determined by the value of key,
+      ++   GSL_INTEG_GAUSS15  (key = 1)
+      ++   GSL_INTEG_GAUSS21  (key = 2)
+      ++   GSL_INTEG_GAUSS31  (key = 3)
+      ++   GSL_INTEG_GAUSS41  (key = 4)
+      ++   GSL_INTEG_GAUSS51  (key = 5)
+      ++   GSL_INTEG_GAUSS61  (key = 6)
+      ++ corresponding to the 15, 21, 31, 41, 51 and 61 point Gauss-
+      ++ Kronrod rules. The higher-order rules give better accuracy for
+      ++ smooth functions, while lower-order rules save time when the
+      ++ function contains local difficulties, such as discontinuities. 
     LUdecomposition: Matrix DF -> Record(LU:Matrix DF,Perm:Vector Integer,Sign:Integer)
+      ++ Factorize the square matrix A into the LU decomposition PA = LU,
+      ++ and return the sign of the permutation.  On output the diagonal and
+      ++ upper triangular part of the input matrix A contain the matrix U.
+      ++ The lower triangular part of the input matrix (excluding the
+      ++ diagonal) contains L.  The diagonal elements of L are unity, and
+      ++ are not stored.
+      ++ The permutation matrix P is returned as the second value. The j-th
+      ++ column of the matrix P is given by the k-th column of the identity
+      ++ matrix, where k = p_j the j-th element of the permutation vector.
+      ++ The sign of the permutation is returned as the third value;
+      ++ it is the value (-1)^n, where n is the number of interchanges in
+      ++ thepermutation.
 
   Implementation ==  add
 
@@ -62,7 +91,7 @@ Gsl() : Exports == Implementation where
     isNaN?(a) == NANP(a)$Lisp      
     finite?(a) == FINITEP(a)$Lisp      
     isInf(a) ==
-      r:SExpression := ISINF(a)$Lisp
+      r:SExpression := GSLISINF(a)$Lisp
       null? r => 0
       integer r
     fcmp(x,y,epsilon) ==
@@ -70,13 +99,15 @@ Gsl() : Exports == Implementation where
       null? r => 0
       integer r
     --
-    integrationQng(f,a,b) ==
-      INTEGRATIONQNG(
-        -- convert returned values to Spad representation
-        (v1:DF,v2:DF,v3:Integer):Record(result:DF, abserr:DF, neval:Integer)+->[v1,v2,v3],
-        f,a,b)$Lisp
+    integrationQng(f,a,b) == GSLINTEGRATIONQNG(
+      -- convert returned values to Spad representation
+      (v1:DF,v2:DF,v3:Integer):Record(result:DF, abserr:DF, neval:Integer)+->[v1,v2,v3],
+      f,a,b)$Lisp
+    integrationQag(f,a,b,key) == GSLINTEGRATIONQAG(
+      (v1:DF,v2:DF):Record(result:DF, abserr:DF)+->[v1,v2],
+      f,a,b,key)$Lisp
     --
-    LUdecomposition(A) == LUDECOMP(
+    LUdecomposition(A) == GSLLUDECOMP(
       -- convert returned values to Spad representation
       (v1:List List DF, v2: List Integer,v3:Integer):Record(LU:Matrix DF,Perm:Vector Integer,Sign:Integer) +->
         [matrix v1,vector v2,v3],

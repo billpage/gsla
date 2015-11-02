@@ -1,7 +1,7 @@
 (in-package :boot)
 (import 'gsll:gsl-lookup)
 (import (list 'gsll:nanp 'gsll:finitep 'gsl:double-float-unequal))
-(import 'gsll:integration-qng)
+;(import 'gsll:integration-qng)
 ;(import 'gsl:lu-decomposition)
 ; more ...
 
@@ -20,7 +20,7 @@
    (lambda (x) (spadcall x spadf))))
 
 ; need to avoid conflict with BOOT:INFINITYP
-(defun IsInf (a) (gsl:infinityp a))
+(defun GSLIsInf (a) (gsl:infinityp a))
 
 ;   The first parameter of each routine below, is a function 'per' written
 ; in Spad which must convert the internal representation of returned
@@ -35,10 +35,18 @@
 ; or a List of such input values. The input values are modified if necessary
 ; to be compatible with GSLL.
 
-(defun integrationqng (per f a b)
-  (apply (|mkLispFunction3| per) (multiple-value-list (integration-qng (|mkLispFunction1| f) a b))))
+(defun gslintegrationqng (per f a b)
+  (apply (|mkLispFunction3| per) (multiple-value-list (gsl:integration-qng (|mkLispFunction1| f) a b))))
 
-(defun ludecomp (per m nrows ncols)
+(defvar intrules (list ':gauss15 ':gauss21 ':gauss31 ':gauss41 ':gauss51 ':gauss61))
+
+(defun gslintegrationqag (per f a b n)
+  (apply (|mkLispFunction2| per)
+    (multiple-value-list (gsl:integration-qag (|mkLispFunction1| f) a b (nth (- n 1) intrules)))
+  )
+)
+
+(defun gslludecomp (per m nrows ncols)
   (let*
     (
       (A
@@ -69,3 +77,4 @@
     )
   )
 )
+
