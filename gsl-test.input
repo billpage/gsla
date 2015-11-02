@@ -1,42 +1,48 @@
 )co gsl
-gslLookup("gsl_linalg_LU_decomp")
-gslLookup("gsl_permute")
+lookup("gsl_linalg_LU_decomp")
+lookup("gsl_permute")
 --
 DF ==> DoubleFloat
 --
-not gslIsNaN?(0.0::DF)
-gslIsNaN?(0.0::DF/0.0::DF)
+not isNaN?(0.0::DF)
+isNaN?(0.0::DF/0.0::DF)
 --
-zero? gslIsInf(0.0::DF)
-zero? gslIsInf(0.0::DF/0.0::DF)
-one? gslIsInf(1.0::DF/0.0::DF)
+zero? isInf(0.0::DF)
+zero? isInf(0.0::DF/0.0::DF)
+one? isInf(1.0::DF/0.0::DF)
 -- see footnote 6 in gsl manual
-one?(-gslIsInf(-1.0::DF/0.0::DF))
+one?(-isInf(-1.0::DF/0.0::DF))
 --
-gslFinite?(0.0::DF)
-not gslFinite?(1.0::DF/0.0::DF)
-not gslFinite?(0.0::DF/0.0::DF)
+finite?(0.0::DF)
+not finite?(1.0::DF/0.0::DF)
+not finite?(0.0::DF/0.0::DF)
 --
-gslFcmp(3.141592::DF,3.1415::DF,0.00001::DF)
-gslFcmp(3.1415::DF,3.141592::DF,0.0001::DF)
-gslFcmp(3.1415::DF,3.141592::DF,0.00001::DF)
+fcmp(3.141592::DF,3.1415::DF,0.00001::DF)
+fcmp(3.1415::DF,3.141592::DF,0.0001::DF)
+fcmp(3.1415::DF,3.141592::DF,0.00001::DF)
 --
 f:=(x:DF):DF+->exp(-x^2)
-gslIntegrationQng(f,0.0::DF,1.0::DF)
+integrationQng(f,0.0::DF,1.0::DF)
 g(x:DF):DF == exp(-x^2)
-gslIntegrationQng(g,0.0::DF,1.0::DF).result
+integrationQng(g,0.0::DF,1.0::DF).result
 --
-m:=matrix [[11.0::DF,2.0::DF,3.0::DF],[4.0::DF,5.0::DF,6.0::DF],[7.0::DF,8.0::DF,9.0::DF]]
-m1:=gslLUdecomposition(m)
--- Why is sign wrong? Need sign of permuation.
-reduce(*,[(m1.LU)(i,i) for i in 1..3])
-determinant(m)
-L1:=matrix [[(j<i=>(m1.LU)(i,j);(i=j=>1.0;0.0)) for j in 1..3] for i in 1..3]
-U1:=matrix [[(i<=j=>(m1.LU)(i,j);0.0) for j in 1..3] for i in 1..3]
-L1*U1
--- Compare
-m2:=LUDecomp(m)$LUDecomposition(DF)
-reduce(*,[(m2.LU)(i,i) for i in 1..3])
-L2:=matrix [[(j<i=>(m2.LU)(i,j);(i=j=>1.0;0.0)) for j in 1..3] for i in 1..3]
-U2:=matrix [[(i<=j=>(m2.LU)(i,j);0.0) for j in 1..3] for i in 1..3]
-L2*U2
+n:=100
+A:=matrix [[((1+random(10^6))/10^7)::DF for i in 1..n] for j in 1..n];
+)set message time on
+m1:=LUdecomposition(A);
+abs(reduce(*,[(m1.LU)(i,i) for i in 1..n]) * m1.Sign - determinant(A))
+--test(fcmp(reduce(*,[(m1.LU)(i,i) for i in 1..n]) * m1.Sign, determinant(A), 1.0E-10)=0)
+L1:=matrix [[(j<i=>(m1.LU)(i,j);(i=j=>1.0;0.0)) for j in 1..n] for i in 1..n];
+U1:=matrix [[(i<=j=>(m1.LU)(i,j);0.0) for j in 1..n] for i in 1..n];
+--reduce(_and,map(x+->abs(x)<1.0E-14,members(matrix([[A((m1.Perm)(i),j) for j in 1..n] for i in 1..n])-L1*U1)))
+reduce(max,map(abs,members(matrix([[A((m1.Perm)(i),j) for j in 1..n] for i in 1..n])-L1*U1)))
+-- Comparison:
+--   GSL LUdecomposition is more accurate then the LUDecomposition
+--   in the FriCAS library and faster for n>1000.
+m2:=LUDecomp(A)$LUDecomposition(DF);
+--test(fcmp(reduce(*,[(m2.LU)(i,i) for i in 1..n]), determinant(A), 1.0E-10)=0)
+abs(reduce(*,[(m2.LU)(i,i) for i in 1..n]) - determinant(A))
+L2:=matrix [[(j<i=>(m2.LU)(i,j);(i=j=>1.0;0.0)) for j in 1..n] for i in 1..n];
+U2:=matrix [[(i<=j=>(m2.LU)(i,j);0.0) for j in 1..n] for i in 1..n];
+--reduce(_and,map(x+->abs(x)<1.0E-11,members(matrix([[A((m2.Perm)(i),j) for j in 1..n] for i in 1..n])-L2*U2)))
+reduce(max,map(abs,members(matrix([[A((m2.Perm)(i),j) for j in 1..n] for i in 1..n])-L2*U2)))

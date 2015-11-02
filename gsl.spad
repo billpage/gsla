@@ -1,7 +1,7 @@
 )lisp (load "~/quicklisp/setup")
 )lisp (ql:quickload "gsll")
 )lisp (load "gsl.lisp")
-)abbrev package GSL gsl
+)abbrev package GSL Gsl
 ++ GNU Scientific Library for Axiom (and FriCAS and OpenAxiom)
 ++ Date Created: October 25, 2015
 ++ License: BSD  (GSL is distributed under the GPL)
@@ -21,62 +21,64 @@
 ++   http://www.gnu.org/software/gsl/manual/
 ++ Author(s):
 ++   Kurt Pagani, Alasdair McAndrew, Bill Page
-gsl() : Exports == Implementation where
+Gsl() : Exports == Implementation where
 
   DF ==> DoubleFloat
 
   Exports ==  with
 
-    gslLookup: String -> Symbol
+    lookup: String -> Symbol
       ++ \spad{\gslLookup} finds GSLL function by GSL name and
       ++ displays some documentation.
-    gslIsNaN?: DF -> Boolean
+    isNaN?: DF -> Boolean
       ++ \spad{\gslIsNaN?} returns true if x is not-a-number. 
-    gslIsInf: DF -> SingleInteger
+    isInf: DF -> Integer
       ++ \spad{\gslIsInf} returns +1 if x is positive infinity,
       ++ -1 if x is negative infinity and 0 otherwise. On
       ++ some platforms 1 is returned for negative infinity.
-    gslFinite?: DF -> Boolean
+    finite?: DF -> Boolean
       ++ \spad{\gslFinite?} returns true if x is a real number,
       ++ and false if it is infinite or not-a-number.
-    gslFcmp: (DF,DF,DF) -> SingleInteger
+    fcmp: (DF,DF,DF) -> Integer
       ++ \spad{\gslFcmp} determines whether x and y are approximately
       ++ equal to a relative accuracy epsilon. If x and y lie
       ++ within this interval, they are considered approximately equal
       ++ and the function returns 0. Otherwise if x < y, the function
       ++ returns -1, or if x > y, the function returns +1. Note that
       ++ this function is not suitable for testing whether a value is
-      ++ approximately zero. 
-    gslIntegrationQng: (DF -> DF,DF,DF) -> Record(result:DF, abserr:DF, neval:Integer)
+      ++ approximately zero.
+    integrationQng: (DF -> DF,DF,DF) -> Record(result:DF, abserr:DF, neval:Integer)
       ++ \spad{\gslIntegrationQng}  applies the Gauss-Kronrod 10-point, 
       ++ 21-point, 43-point and 87-point integration rules in succession
-    gslLUdecomposition: Matrix DF -> Record(LU:Matrix DF,Perm:List Integer)
+    LUdecomposition: Matrix DF -> Record(LU:Matrix DF,Perm:Vector Integer,Sign:Integer)
 
   Implementation ==  add
 
-    gslLookup(s) ==
+    lookup(s) ==
       j:SExpression := GSL_-LOOKUP(s)$Lisp
       if not null? j then
         DESCRIBE(symbol(j))$Lisp
       symbol(j)
-    gslIsNaN?(a) == NANP(a)$Lisp      
-    gslFinite?(a) == FINITEP(a)$Lisp      
-    gslIsInf(a) ==
+    isNaN?(a) == NANP(a)$Lisp      
+    finite?(a) == FINITEP(a)$Lisp      
+    isInf(a) ==
       r:SExpression := ISINF(a)$Lisp
       null? r => 0
-      r pretend SingleInteger
-    gslFcmp(x,y,epsilon) ==
+      integer r
+    fcmp(x,y,epsilon) ==
       r:SExpression := DOUBLE_-FLOAT_-UNEQUAL(x,y,epsilon)$Lisp
       null? r => 0
-      r pretend SingleInteger
-    gslIntegrationQng(f,a,b) == INTEGRATION_-QNG_-VECTOR(mkLispFunction1(f@(DF->DF))$Lisp,a,b)$Lisp
-
-    gslLUdecomposition(mat) ==
-      m:=listOfLists mat
-      r:=nrows mat
-      c:=ncols mat
-      res:List List List DF:=LU_-DECOMP(m,r,c)$Lisp
-      --output(res)
-      [matrix(res(1)),res(2) pretend List Integer]
-
+      integer r
+    --
+    integrationQng(f,a,b) ==
+      INTEGRATIONQNG(
+        -- convert returned values to Spad representation
+        (v1:DF,v2:DF,v3:Integer):Record(result:DF, abserr:DF, neval:Integer)+->[v1,v2,v3],
+        f,a,b)$Lisp
+    --
+    LUdecomposition(A) == LUDECOMP(
+      -- convert returned values to Spad representation
+      (v1:List List DF, v2: List Integer,v3:Integer):Record(LU:Matrix DF,Perm:Vector Integer,Sign:Integer) +->
+        [matrix v1,vector v2,v3],
+      listOfLists A,nrows A,ncols A)$Lisp
 
