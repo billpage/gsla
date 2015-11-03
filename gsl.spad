@@ -56,9 +56,8 @@ Gsl() : Exports == Implementation where
     integrationQng: (DF->DF,DF,DF,DF,DF) -> Record(result:DF, abserr:DF, neval:Integer)
       ++ \spad{\gslIntegrationQng(f,a,b,epsabs,epsrel)}  applies the Gauss-Kronrod 10-point, 
       ++ 21-point, 43-point and 87-point integration rules in succession
-
     integrationQag: (DF -> DF,DF,DF,Integer) -> Record(result:DF, abserr:DF)
-      ++ \spad{\integrationQag} applies an integration rule adaptively
+      ++ \spad{\integrationQag(f,a,b,key)} applies an integration rule adaptively
       ++ until an estimate of the integral of f over (a,b) is achieved
       ++ within the desired absolute and relative error limits, epsabs
       ++ and epsrel. The function returns the final approximation,
@@ -73,7 +72,13 @@ Gsl() : Exports == Implementation where
       ++ corresponding to the 15, 21, 31, 41, 51 and 61 point Gauss-
       ++ Kronrod rules. The higher-order rules give better accuracy for
       ++ smooth functions, while lower-order rules save time when the
-      ++ function contains local difficulties, such as discontinuities. 
+      ++ function contains local difficulties, such as discontinuities.
+    integrationQagp: (DF -> DF,List DF) -> Record(result:DF, abserr:DF)
+      ++ \spad{\integrationQag(f,S)} applies the adaptive integration
+      ++ algorithm QAGS taking account of the user-supplied locations
+      ++ of singular points.  The list of points should contain the
+      ++ endpoints of the integration a, b and intermediate locations
+      ++ of the singularities, e.g. [a,x1,x2,x3,b].
     LUdecomposition: Matrix DF -> Record(LU:Matrix DF,Perm:Vector Integer,Sign:Integer)
       ++ Factorize the square matrix A into the LU decomposition PA = LU,
       ++ and return the sign of the permutation.  On output the diagonal and
@@ -107,11 +112,9 @@ Gsl() : Exports == Implementation where
       integer r
     --
     integrationQng(f,a,b) == GSLINTEGRATIONQNG(
-      -- convert returned values to Spad representation
       (v1:DF,v2:DF,v3:Integer):Record(result:DF, abserr:DF, neval:Integer)+->[v1,v2,v3],
       f,a,b,nil()$List(DF))$Lisp
     integrationQng(f,a,b,epsabs) == GSLINTEGRATIONQNG(
-      -- convert returned values to Spad representation
       (v1:DF,v2:DF,v3:Integer):Record(result:DF, abserr:DF, neval:Integer)+->[v1,v2,v3],
       f,a,b,[epsabs]$List(DF))$Lisp
     integrationQng(f,a,b,epsabs,epsrel) == GSLINTEGRATIONQNG(
@@ -121,6 +124,8 @@ Gsl() : Exports == Implementation where
     integrationQag(f,a,b,key) == GSLINTEGRATIONQAG(
       (v1:DF,v2:DF):Record(result:DF, abserr:DF)+->[v1,v2],
       f,a,b,key)$Lisp
+    integrationQagp(f,S) == GSLINTEGRATIONQAGP(
+      (v1:DF,v2:DF):Record(result:DF, abserr:DF)+->[v1,v2], f,S)$Lisp
     --
     LUdecomposition(A) == GSLLUDECOMP(
       -- convert returned values to Spad representation

@@ -53,8 +53,21 @@
   )
 )
 
+(defun gslintegrationqagp (per f S)
+  (let
+    (
+      (A
+        (grid:make-foreign-array 'double-float :dimensions (length S) :initial-contents S)
+      )
+    )
+    (apply (|mkLispFunction2| per)
+      (multiple-value-list (gsl:integration-qagp (|mkLispFunction1| f) A ))
+    )
+  )
+)
+
 (defun gslludecomp (per m nrows ncols)
-  (let*
+  (let
     (
       (A
         (grid:make-foreign-array 'double-float :dimensions (list nrows ncols) :initial-contents

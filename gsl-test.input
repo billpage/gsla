@@ -29,6 +29,7 @@ integrationQng(g,0.0::DF,1.0::DF,1.0E-10::DF).result
 integrationQng(g,0.0::DF,1.0::DF,1.0E-10::DF,1.0E-10::DF).result
 integrationQag(f,0.0::DF,1.0::DF,1)
 integrationQag(f,0.0::DF,1.0::DF,6)
+integrationQagp(f,[0.0::DF,0.5::DF,1.0::DF])
 --
 n:=100
 A:=matrix [[((1+random(10^6))/10^7)::DF for i in 1..n] for j in 1..n];
